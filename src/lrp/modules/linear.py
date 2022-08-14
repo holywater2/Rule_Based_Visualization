@@ -12,7 +12,8 @@ class LinearLrp(nn.Module):
 
         self.layer.weight = self.rho(self.layer.weight)
         self.layer.bias = keep_conservative(self.layer.bias)
-
+        self.mask = None
+        
     def forward(self, Rj, Ai):
         
         # Ai = torch.autograd.Variable(Ai, requires_grad=True)
@@ -21,7 +22,19 @@ class LinearLrp(nn.Module):
         S = (Rj / Z).data 
         (Z * S).sum().backward()
         Ci = Ai.grad 
+        Ri = (Ai * Ci).data
+        if self.mask:
+            Ri[:,self.mask] = 0
 
-        return  (Ai * Ci).data
+        return  Ri
 
 
+    def register_concept_mask(self, concept_ids):
+        # masking all other filters of the selected concept_ids
+        if concept_ids:
+            self.mask = list(
+                            set(range(self.layer.weight.size(1))) - set(concept_ids)
+                        )
+
+    def remove_concept_mask(self):
+        self.mask = None

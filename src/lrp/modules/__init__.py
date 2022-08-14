@@ -5,6 +5,7 @@ from .pool import  AvgPoolLrp, MaxPoolLrp, AdaptiveAvgPoolLrp
 from .flatten import FlattenLrp
 from .dropout import DropoutLrp
 from .input import InputLrp
+from .special import SpecialLayerLrp, SpecialLayer
 
 
 __ALL__ = [
@@ -16,5 +17,6 @@ __ALL__ = [
     MaxPoolLrp,
     AdaptiveAvgPoolLrp,
     FlattenLrp,
-    DropoutLrp
+    DropoutLrp,
+    SpecialLayerLrp
 ]

@@ -15,6 +15,7 @@ LookUpTable = {
     "AdaptiveAvgPool2d" : AdaptiveAvgPoolLrp,
     "Flatten":FlattenLrp,
     "Dropout" : DropoutLrp,
+    "SpecialLayer" : SpecialLayerLrp
 }
 
 class LRP():
@@ -37,6 +38,7 @@ class LRP():
             try:
                 a = layer(a)
             except Exception as e:
+                print(a)
                 print("Error:", layer)
                 print("Error:", e)
                 exit()
@@ -70,6 +72,47 @@ class LRP():
         }
         return output 
 
+    def neg_forward(self, a, y=None, class_specific=True):
+        # store activations 
+        activations = [torch.ones_like(a)] 
+        for i, layer in enumerate(self.original_layers):
+            try:
+                a = layer(a)
+            except Exception as e:
+                print("Error:", layer)
+                print("Error:", e)
+                exit()
+            activations.append(a)
+        
+        activations = activations[::-1]
+        activations = [a.data.requires_grad_(True) for a in activations]
+        # compute LRP 
+        prediction_outcome = activations.pop(0)
+        score = torch.softmax(prediction_outcome, dim=-1)
+        if class_specific:
+            if y is None:
+                class_index = score.argmax(axis=-1)
+            else:
+                class_index = y
+            class_score = torch.FloatTensor(a.size(0), score.size()[-1]).zero_().to("cuda")
+            class_score[:,class_index] = score[:,class_index]
+        else:
+            class_score = score
+        modules = []
+        relevances = [ -class_score] 
+        for (Ai, module) in zip(activations, self.lrp_modules):
+            Rj = relevances[-1]
+            Ri = module.forward(Rj, Ai)
+            relevances.append(Ri)
+        output = {
+            "R" : relevances[-1],
+            "all_relevnaces" : relevances,
+            "activations" : activations,
+            "prediction_outcome": prediction_outcome
+        }
+        return output 
+    
+    
     def construct_lrp_modules(self, original_layers, rule_descriptions, device):
         used_names = [] 
         modules = [] 
