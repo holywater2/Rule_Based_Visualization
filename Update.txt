@@ -1,0 +1,8 @@
+22-08-16
+(1) softmax가 적용이 안돼있어서 수정
+-> pred_list에 functional.softmax(...)로 적용
+(2) criteria reduction sum으로 수정
+-> 적용
+(3) VGG16 learning의 fine-tuning이 별 필요 없을 수도 있음
+-> 1 epoch만 learning하도록 적용.
+(4) 설명에서 오탈자 수정

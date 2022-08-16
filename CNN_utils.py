@@ -228,7 +228,7 @@ def evaluation(model, data_loader, criterion, classes):
         100. * np.sum(class_correct) / np.sum(class_total),
         np.sum(class_correct), np.sum(class_total)))
 
-def rule_evaluation(rule_list, x_list, y_list, hidden_sample_list, classes):
+def rule_evaluation(rule_list, x_list, y_list, pred_list, hidden_sample_list, classes):
     class_len     = len(classes)
     class_correct = list(0. for i in range(class_len))
     class_total = list(0. for i in range(class_len))
